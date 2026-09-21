@@ -2,6 +2,7 @@
 
 namespace App\Services\Telegram;
 
+use App\Models\Service;
 use App\Models\TelegramSession;
 use App\Models\TelegramUser;
 
@@ -52,15 +53,42 @@ class CallbackHandler
         TelegramUser $user,
         TelegramSession $session,
     ): void {
-        // Will be extended in feature commits
         match ($value) {
             'main' => $this->messageHandler->sendMainMenu($chatId),
+            'services' => $this->showServicesList($chatId),
             default => $this->messageHandler->sendMainMenu($chatId),
         };
     }
 
     /**
-     * Service-related callbacks. Will be implemented in commit 13.
+     * Show the list of all active services.
+     */
+    private function showServicesList(int $chatId): void
+    {
+        $services = Service::active()->get();
+
+        $text = "🛠 <b>Our Services</b>\n\n"
+            . "Select a service to learn more:";
+
+        $buttons = [];
+        foreach ($services->chunk(2) as $chunk) {
+            $row = [];
+            foreach ($chunk as $service) {
+                $row[] = TelegramApi::inlineButton(
+                    $service->button_label,
+                    "service:view:{$service->id}"
+                );
+            }
+            $buttons[] = $row;
+        }
+
+        $buttons[] = [TelegramApi::inlineButton('⬅️ Back', 'menu:main')];
+
+        $this->api->sendMessage($chatId, $text, TelegramApi::inlineKeyboard($buttons));
+    }
+
+    /**
+     * Handle service-related callbacks.
      */
     private function handleServiceAction(
         int $chatId,
@@ -69,7 +97,60 @@ class CallbackHandler
         TelegramUser $user,
         TelegramSession $session,
     ): void {
-        $this->messageHandler->sendMainMenu($chatId);
+        // Parse sub-action: "view:ID"
+        $parts = explode(':', $value, 2);
+        $subAction = $parts[0] ?? '';
+        $serviceId = $parts[1] ?? '';
+
+        match ($subAction) {
+            'view' => $this->showServiceDetail($chatId, (int) $serviceId),
+            'list' => $this->showServicesList($chatId),
+            default => $this->showServicesList($chatId),
+        };
+    }
+
+    /**
+     * Show detailed information about a specific service.
+     */
+    private function showServiceDetail(int $chatId, int $serviceId): void
+    {
+        $service = Service::find($serviceId);
+
+        if (! $service) {
+            $this->showServicesList($chatId);
+            return;
+        }
+
+        $text = "{$service->emoji} <b>{$service->name}</b>\n\n"
+            . "{$service->description}\n\n";
+
+        if ($service->technologies) {
+            $text .= "<b>Technology:</b>\n"
+                . implode(' • ', $service->technologies) . "\n\n";
+        }
+
+        if ($service->suitable_for) {
+            $text .= "<b>Suitable for:</b>\n";
+            foreach ($service->suitable_for as $item) {
+                $text .= "✓ {$item}\n";
+            }
+        }
+
+        $buttons = [
+            [TelegramApi::inlineButton('📄 Download Service PDF', "brochure:download:{$service->id}")],
+            [
+                TelegramApi::inlineButton('💰 Pricing', 'menu:pricing'),
+                TelegramApi::inlineButton('📋 Get Quote', 'menu:quote'),
+            ],
+        ];
+
+        if ($service->website_url) {
+            $buttons[] = [TelegramApi::inlineButton('🌐 View Website', null, $service->website_url)];
+        }
+
+        $buttons[] = [TelegramApi::inlineButton('⬅️ Back', 'service:list')];
+
+        $this->api->sendMessage($chatId, $text, TelegramApi::inlineKeyboard($buttons));
     }
 
     /**
