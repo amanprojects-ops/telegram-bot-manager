@@ -13,6 +13,7 @@ class CallbackHandler
         private MessageHandler $messageHandler,
         private BrochureService $brochureService,
         private LeadService $leadService,
+        private GeneralFlowService $generalFlowService,
     ) {}
 
     /**
@@ -59,7 +60,11 @@ class CallbackHandler
             'main' => $this->messageHandler->sendMainMenu($chatId),
             'services' => $this->showServicesList($chatId),
             'brochures' => $this->brochureService->showBrochureMenu($chatId),
+            'pricing' => $this->generalFlowService->showPricing($chatId),
+            'projects' => $this->generalFlowService->showProjects($chatId),
             'quote' => $this->leadService->startQuoteFlow($chatId, $session),
+            'contact' => $this->generalFlowService->showContact($chatId),
+            'location' => $this->generalFlowService->showLocation($chatId),
             default => $this->messageHandler->sendMainMenu($chatId),
         };
     }
@@ -180,7 +185,7 @@ class CallbackHandler
     }
 
     /**
-     * Pricing-related callbacks. Will be implemented in commit 16.
+     * Handle pricing-related callbacks.
      */
     private function handlePricingAction(
         int $chatId,
@@ -189,11 +194,19 @@ class CallbackHandler
         TelegramUser $user,
         TelegramSession $session,
     ): void {
-        $this->messageHandler->sendMainMenu($chatId);
+        $parts = explode(':', $value, 2);
+        $subAction = $parts[0] ?? '';
+        $subValue = $parts[1] ?? '';
+
+        match ($subAction) {
+            'list' => $this->generalFlowService->showPricing($chatId),
+            'view' => $this->generalFlowService->showPricingDetail($chatId, (int) $subValue),
+            default => $this->generalFlowService->showPricing($chatId),
+        };
     }
 
     /**
-     * Project-related callbacks. Will be implemented in commit 16.
+     * Handle project-related callbacks.
      */
     private function handleProjectAction(
         int $chatId,
@@ -202,7 +215,15 @@ class CallbackHandler
         TelegramUser $user,
         TelegramSession $session,
     ): void {
-        $this->messageHandler->sendMainMenu($chatId);
+        $parts = explode(':', $value, 2);
+        $subAction = $parts[0] ?? '';
+        $subValue = $parts[1] ?? '';
+
+        match ($subAction) {
+            'list' => $this->generalFlowService->showProjects($chatId),
+            'view' => $this->generalFlowService->showProjectDetail($chatId, (int) $subValue),
+            default => $this->generalFlowService->showProjects($chatId),
+        };
     }
 
     /**
