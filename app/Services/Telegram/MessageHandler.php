@@ -66,7 +66,25 @@ class MessageHandler
         TelegramUser $user,
         TelegramSession $session,
     ): void {
-        // Deep link will be handled in commit 28
+        // Log the referral or source if it's a campaign link
+        if (str_starts_with($parameter, 'campaign_')) {
+            $campaign = str_replace('campaign_', '', $parameter);
+            // Example: User::where('id', $user->id)->update(['source' => $campaign]);
+            // For now, we'll just acknowledge it and go to main menu
+            $this->api->sendMessage($chatId, "🎉 Welcome from the {$campaign} campaign!");
+            $this->sendMainMenu($chatId);
+            return;
+        }
+
+        // Direct service quote deep links
+        if (str_starts_with($parameter, 'quote_')) {
+            $serviceName = str_replace('quote_', '', $parameter);
+            // Simulate pressing the quote button for a service
+            $this->leadService->startQuoteFlow($chatId, $session);
+            return;
+        }
+
+        // Default behavior
         $this->sendMainMenu($chatId);
     }
 
