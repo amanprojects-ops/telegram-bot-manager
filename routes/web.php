@@ -12,7 +12,11 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
     
     // Placeholder routes for now to avoid errors in layout
-    Route::get('/leads', function () { return 'Leads coming soon'; })->name('leads.index');
+    // Leads Management
+    Route::get('/leads', [\App\Http\Controllers\Admin\LeadController::class, 'index'])->name('leads.index');
+    Route::get('/leads/{lead}', [\App\Http\Controllers\Admin\LeadController::class, 'show'])->name('leads.show');
+    Route::patch('/leads/{lead}/status', [\App\Http\Controllers\Admin\LeadController::class, 'updateStatus'])->name('leads.status');
+    Route::patch('/leads/{lead}/priority', [\App\Http\Controllers\Admin\LeadController::class, 'togglePriority'])->name('leads.priority');
     Route::get('/broadcast', function () { return 'Broadcast coming soon'; })->name('broadcast.index');
 });
 
