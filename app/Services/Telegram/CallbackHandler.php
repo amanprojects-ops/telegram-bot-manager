@@ -11,6 +11,7 @@ class CallbackHandler
     public function __construct(
         private TelegramApi $api,
         private MessageHandler $messageHandler,
+        private BrochureService $brochureService,
     ) {}
 
     /**
@@ -56,6 +57,7 @@ class CallbackHandler
         match ($value) {
             'main' => $this->messageHandler->sendMainMenu($chatId),
             'services' => $this->showServicesList($chatId),
+            'brochures' => $this->brochureService->showBrochureMenu($chatId),
             default => $this->messageHandler->sendMainMenu($chatId),
         };
     }
@@ -154,7 +156,7 @@ class CallbackHandler
     }
 
     /**
-     * Brochure-related callbacks. Will be implemented in commit 14.
+     * Handle brochure-related callbacks.
      */
     private function handleBrochureAction(
         int $chatId,
@@ -163,7 +165,16 @@ class CallbackHandler
         TelegramUser $user,
         TelegramSession $session,
     ): void {
-        $this->messageHandler->sendMainMenu($chatId);
+        // Parse: "download:ID" or "menu"
+        $parts = explode(':', $value, 2);
+        $subAction = $parts[0] ?? '';
+        $serviceId = $parts[1] ?? '';
+
+        match ($subAction) {
+            'download' => $this->brochureService->sendBrochure($chatId, (int) $serviceId, $user->telegram_user_id),
+            'menu' => $this->brochureService->showBrochureMenu($chatId),
+            default => $this->brochureService->showBrochureMenu($chatId),
+        };
     }
 
     /**
