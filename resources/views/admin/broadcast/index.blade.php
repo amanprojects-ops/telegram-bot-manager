@@ -54,7 +54,12 @@
                                             <i class="fas fa-eye"></i>
                                         </a>
                                         @if($broadcast->status === 'draft')
-                                            <!-- Action to start now would go here -->
+                                            <form method="POST" action="{{ route('admin.broadcast.start', $broadcast) }}" class="d-inline">
+                                                @csrf
+                                                <button type="submit" class="btn btn-sm btn-success" title="Start Now" onclick="return confirm('Start broadcast to all users now?')">
+                                                    <i class="fas fa-play"></i>
+                                                </button>
+                                            </form>
                                         @endif
                                     </td>
                                 </tr>

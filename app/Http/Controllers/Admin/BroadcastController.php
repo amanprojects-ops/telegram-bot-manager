@@ -48,6 +48,17 @@ class BroadcastController extends Controller
         return redirect()->route('admin.broadcast.index')->with('success', 'Broadcast created successfully.');
     }
 
+    public function start(Broadcast $broadcast)
+    {
+        if ($broadcast->status !== 'draft') {
+            return redirect()->route('admin.broadcast.index')->with('error', 'Only draft broadcasts can be started manually.');
+        }
+
+        \App\Jobs\ProcessBroadcast::dispatch($broadcast);
+
+        return redirect()->route('admin.broadcast.index')->with('success', 'Broadcast started successfully.');
+    }
+
     public function show(Broadcast $broadcast)
     {
         $broadcast->load('messages.user');
