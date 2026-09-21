@@ -12,6 +12,7 @@ class CallbackHandler
         private TelegramApi $api,
         private MessageHandler $messageHandler,
         private BrochureService $brochureService,
+        private LeadService $leadService,
     ) {}
 
     /**
@@ -58,6 +59,7 @@ class CallbackHandler
             'main' => $this->messageHandler->sendMainMenu($chatId),
             'services' => $this->showServicesList($chatId),
             'brochures' => $this->brochureService->showBrochureMenu($chatId),
+            'quote' => $this->leadService->startQuoteFlow($chatId, $session),
             default => $this->messageHandler->sendMainMenu($chatId),
         };
     }
@@ -204,7 +206,7 @@ class CallbackHandler
     }
 
     /**
-     * Quote-related callbacks. Will be implemented in commit 15.
+     * Handle quote-related callbacks.
      */
     private function handleQuoteAction(
         int $chatId,
@@ -213,7 +215,18 @@ class CallbackHandler
         TelegramUser $user,
         TelegramSession $session,
     ): void {
-        $this->messageHandler->sendMainMenu($chatId);
+        $parts = explode(':', $value, 2);
+        $subAction = $parts[0] ?? '';
+        $subValue = $parts[1] ?? '';
+
+        match ($subAction) {
+            'service' => $this->leadService->handleServiceSelection($chatId, $subValue, $session),
+            'budget' => $this->leadService->handleBudgetSelection($chatId, $subValue, $session),
+            'submit' => $this->leadService->submitQuote($chatId, $user, $session),
+            'edit' => $this->leadService->startQuoteFlow($chatId, $session),
+            'cancel' => $this->leadService->cancelQuote($chatId, $session),
+            default => $this->leadService->startQuoteFlow($chatId, $session),
+        };
     }
 
     /**
@@ -230,7 +243,7 @@ class CallbackHandler
     }
 
     /**
-     * Lead admin callbacks (mark contacted, priority, etc.).
+     * Handle lead admin callbacks (mark contacted, priority).
      */
     private function handleLeadAction(
         int $chatId,
@@ -239,7 +252,33 @@ class CallbackHandler
         TelegramUser $user,
         TelegramSession $session,
     ): void {
-        $this->messageHandler->sendMainMenu($chatId);
+        $parts = explode(':', $value, 2);
+        $subAction = $parts[0] ?? '';
+        $leadId = (int) ($parts[1] ?? 0);
+
+        $lead = \App\Models\TelegramLead::find($leadId);
+        if (! $lead) {
+            $this->api->sendMessage($chatId, '❌ Lead not found.');
+            return;
+        }
+
+        match ($subAction) {
+            'contacted' => $this->markLeadContacted($chatId, $lead),
+            'priority' => $this->markLeadPriority($chatId, $lead),
+            default => null,
+        };
+    }
+
+    private function markLeadContacted(int $chatId, TelegramLead $lead): void
+    {
+        $lead->markContacted();
+        $this->api->sendMessage($chatId, "✅ Lead <b>{$lead->lead_id}</b> marked as contacted.");
+    }
+
+    private function markLeadPriority(int $chatId, TelegramLead $lead): void
+    {
+        $lead->markPriority();
+        $this->api->sendMessage($chatId, "⭐ Lead <b>{$lead->lead_id}</b> marked as high priority.");
     }
 
     /**

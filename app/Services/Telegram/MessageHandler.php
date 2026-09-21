@@ -9,6 +9,7 @@ class MessageHandler
 {
     public function __construct(
         private TelegramApi $api,
+        private LeadService $leadService,
     ) {}
 
     /**
@@ -78,8 +79,11 @@ class MessageHandler
         TelegramUser $user,
         TelegramSession $session,
     ): void {
-        // Will be implemented in lead service (commit 15)
-        $this->sendMainMenu($chatId);
+        $handled = $this->leadService->handleStatefulInput($chatId, $text, $user, $session);
+
+        if (! $handled) {
+            $this->sendMainMenu($chatId);
+        }
     }
 
     /**
