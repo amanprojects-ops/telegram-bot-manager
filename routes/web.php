@@ -17,7 +17,11 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::get('/leads/{lead}', [\App\Http\Controllers\Admin\LeadController::class, 'show'])->name('leads.show');
     Route::patch('/leads/{lead}/status', [\App\Http\Controllers\Admin\LeadController::class, 'updateStatus'])->name('leads.status');
     Route::patch('/leads/{lead}/priority', [\App\Http\Controllers\Admin\LeadController::class, 'togglePriority'])->name('leads.priority');
-    Route::get('/broadcast', function () { return 'Broadcast coming soon'; })->name('broadcast.index');
+    // Broadcasts
+    Route::get('/broadcast', [\App\Http\Controllers\Admin\BroadcastController::class, 'index'])->name('broadcast.index');
+    Route::get('/broadcast/create', [\App\Http\Controllers\Admin\BroadcastController::class, 'create'])->name('broadcast.create');
+    Route::post('/broadcast', [\App\Http\Controllers\Admin\BroadcastController::class, 'store'])->name('broadcast.store');
+    Route::get('/broadcast/{broadcast}', [\App\Http\Controllers\Admin\BroadcastController::class, 'show'])->name('broadcast.show');
 });
 
 // Dummy logout route for the layout
