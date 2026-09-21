@@ -186,4 +186,29 @@ class GeneralFlowService
         // Then send the text message with buttons
         $this->api->sendMessage($chatId, $text, TelegramApi::inlineKeyboard($buttons));
     }
+
+    /**
+     * Show cyber security information.
+     */
+    public function showCyberSecurity(int $chatId): void
+    {
+        $text = "🛡 <b>Cyber Security Services</b>\n\n"
+            . "Protect your digital assets with our comprehensive security solutions.\n\n"
+            . "<b>Our Offerings:</b>\n"
+            . "✓ Web Application Penetration Testing\n"
+            . "✓ Mobile App Security Testing\n"
+            . "✓ Network Vulnerability Assessment\n"
+            . "✓ Code Review & Security Audits\n"
+            . "✓ DDoS Protection Setup\n"
+            . "✓ Server Hardening\n\n"
+            . "<i>Secure your business before it's too late!</i>";
+
+        $buttons = [
+            [TelegramApi::inlineButton('🚨 Report Security Incident', 'quote:service:other')],
+            [TelegramApi::inlineButton('📋 Get Security Quote', 'menu:quote')],
+            [TelegramApi::inlineButton('⬅️ Back', 'menu:main')],
+        ];
+
+        $this->api->sendMessage($chatId, $text, TelegramApi::inlineKeyboard($buttons));
+    }
 }

@@ -62,6 +62,7 @@ class CallbackHandler
             'brochures' => $this->brochureService->showBrochureMenu($chatId),
             'pricing' => $this->generalFlowService->showPricing($chatId),
             'projects' => $this->generalFlowService->showProjects($chatId),
+            'cybersecurity' => $this->generalFlowService->showCyberSecurity($chatId),
             'quote' => $this->leadService->startQuoteFlow($chatId, $session),
             'contact' => $this->generalFlowService->showContact($chatId),
             'location' => $this->generalFlowService->showLocation($chatId),
@@ -251,7 +252,7 @@ class CallbackHandler
     }
 
     /**
-     * Cyber security callbacks. Will be implemented in commit 17.
+     * Handle cyber security callbacks.
      */
     private function handleCyberAction(
         int $chatId,
@@ -260,7 +261,7 @@ class CallbackHandler
         TelegramUser $user,
         TelegramSession $session,
     ): void {
-        $this->messageHandler->sendMainMenu($chatId);
+        $this->generalFlowService->showCyberSecurity($chatId);
     }
 
     /**
