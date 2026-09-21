@@ -66,6 +66,8 @@ class CallbackHandler
             'quote' => $this->leadService->startQuoteFlow($chatId, $session),
             'contact' => $this->generalFlowService->showContact($chatId),
             'location' => $this->generalFlowService->showLocation($chatId),
+            'faq' => $this->generalFlowService->showFaq($chatId),
+            'about' => $this->generalFlowService->showAbout($chatId),
             default => $this->messageHandler->sendMainMenu($chatId),
         };
     }
@@ -304,7 +306,7 @@ class CallbackHandler
     }
 
     /**
-     * FAQ callbacks. Will be implemented in commit 27.
+     * Handle FAQ callbacks.
      */
     private function handleFaqAction(
         int $chatId,
@@ -313,7 +315,7 @@ class CallbackHandler
         TelegramUser $user,
         TelegramSession $session,
     ): void {
-        $this->messageHandler->sendMainMenu($chatId);
+        $this->generalFlowService->showFaq($chatId);
     }
 
     /**

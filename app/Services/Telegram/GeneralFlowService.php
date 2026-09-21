@@ -211,4 +211,45 @@ class GeneralFlowService
 
         $this->api->sendMessage($chatId, $text, TelegramApi::inlineKeyboard($buttons));
     }
+
+    /**
+     * Show FAQ information.
+     */
+    public function showFaq(int $chatId): void
+    {
+        $text = "❓ <b>Frequently Asked Questions</b>\n\n"
+            . "<b>1. How much does a website cost?</b>\n"
+            . "It depends on your requirements. Our basic plan starts at ₹4,999.\n\n"
+            . "<b>2. Do you provide domain and hosting?</b>\n"
+            . "Yes, we provide end-to-end hosting and domain setup.\n\n"
+            . "<b>3. How long does it take to deliver?</b>\n"
+            . "A standard website takes 5-7 days. Custom apps may take 2-4 weeks.\n\n"
+            . "<b>4. Do you provide SEO?</b>\n"
+            . "Yes, basic SEO is included in all our plans.";
+
+        $buttons = [
+            [TelegramApi::inlineButton('📞 Still have questions?', 'menu:contact')],
+            [TelegramApi::inlineButton('⬅️ Back', 'menu:main')],
+        ];
+
+        $this->api->sendMessage($chatId, $text, TelegramApi::inlineKeyboard($buttons));
+    }
+
+    /**
+     * Show About Us information.
+     */
+    public function showAbout(int $chatId): void
+    {
+        $text = "ℹ️ <b>About AmanProjects</b>\n\n"
+            . "AmanProjects is a leading software development agency based in Bihar, India.\n\n"
+            . "We specialize in building scalable web applications, mobile apps, and providing robust cyber security solutions.\n\n"
+            . "<b>Our Mission:</b> To empower businesses with modern technology.";
+
+        $buttons = [
+            [TelegramApi::inlineButton('🚀 View Our Projects', 'menu:projects')],
+            [TelegramApi::inlineButton('⬅️ Back', 'menu:main')],
+        ];
+
+        $this->api->sendMessage($chatId, $text, TelegramApi::inlineKeyboard($buttons));
+    }
 }
