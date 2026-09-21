@@ -1,59 +1,82 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Telegram Bot Manager
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+A robust Telegram Bot Manager built with Laravel, designed for automated service inquiries, lead generation, and dynamic interactions for AmanProjects.
 
-## About Laravel
+## Features
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+- **Interactive Service Navigation**: Users can browse pricing, projects, and services directly within Telegram.
+- **Lead Generation State Machine**: Captures user details step-by-step (e.g., service needed, budget, additional requirements).
+- **Automated PDF Delivery**: Sends brochures and dynamically caches Telegram `file_id` for quick subsequent deliveries.
+- **Deep Linking**: Track campaigns and referral links seamlessly (`/start campaign_x`).
+- **Broadcast System**: A powerful rate-limited broadcast engine to send mass messages to bot users.
+- **AdminLTE Dashboard**: A web-based admin interface to track leads, monitor bot activity, and manage broadcasts.
+- **Robust Webhook Handling**: Secure double-secret validation and duplicate payload protection.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Setup Instructions
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+### 1. Requirements
+- PHP 8.2+
+- MySQL or PostgreSQL
+- Composer
+- Node.js (for frontend compilation if needed)
+- A Telegram Bot Token from [BotFather](https://t.me/BotFather)
 
-## Learning Laravel
+### 2. Installation
+Clone the repository and install dependencies:
+```bash
+git clone https://github.com/your-repo/telegram-bot-manager.git
+cd telegram-bot-manager
+composer install
+cp .env.example .env
+php artisan key:generate
+```
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+### 3. Database Setup
+Update your `.env` with your database credentials:
+```env
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=telegram_bot
+DB_USERNAME=root
+DB_PASSWORD=
+```
+Run the migrations and seed the initial data (pricing, projects, services):
+```bash
+php artisan migrate --seed
+```
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+### 4. Telegram Configuration
+Add your Telegram bot credentials to your `.env` file:
+```env
+TELEGRAM_BOT_TOKEN=your_bot_token_here
+TELEGRAM_WEBHOOK_SECRET=your_custom_secret_key_here
+TELEGRAM_ADMIN_CHAT_ID=your_personal_chat_id_for_notifications
+```
 
-## Laravel Sponsors
+### 5. Setup Webhook
+To start receiving messages, you must register your webhook with Telegram. 
+The Webhook URL structure is: `https://your-domain.com/api/telegram/webhook/your_custom_secret_key_here`
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+You can manually set this via a GET request to:
+`https://api.telegram.org/bot<YOUR_BOT_TOKEN>/setWebhook?url=https://your-domain.com/api/telegram/webhook/<YOUR_SECRET_KEY>&secret_token=<YOUR_SECRET_KEY>`
 
-### Premium Partners
+### 6. Queue and Scheduler
+The broadcast system requires a running queue worker and scheduler.
+In production, use Supervisor to keep the queue worker running:
+```bash
+php artisan queue:work
+```
+And add this Cron entry to your server to run the scheduler every minute:
+```bash
+* * * * * cd /path-to-your-project && php artisan schedule:run >> /dev/null 2>&1
+```
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+## Usage
 
-## Contributing
-
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
-
-## Code of Conduct
-
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
-
-## Security Vulnerabilities
-
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+- **User Flow:** Send `/start` to the bot to view the main menu.
+- **Admin Dashboard:** Visit `http://your-domain.com/admin` to manage leads and broadcasts.
 
 ## License
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+This project is open-source and licensed under the MIT License.
